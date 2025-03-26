@@ -127,7 +127,7 @@ def main(
         per_device_eval_batch_size=script_args.per_device_eval_batch_size,
         num_train_epochs=script_args.num_train_epochs,
         weight_decay=script_args.weight_decay,
-        adam_beta1=script_args.adam_beta1,
+        # adam_beta1=script_args.adam_beta1,
         evaluation_strategy="steps",
         eval_steps=script_args.eval_every_steps,
         save_strategy="no",  # ! not saving during training
