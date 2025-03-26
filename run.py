@@ -74,7 +74,7 @@ def main(
     set_random_seed(seed)
 
     tokenizer_name = script_args.model_name
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=False)
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=True)
 
     # handle those with no official pad token
     no_predefined_pad_flag = False
