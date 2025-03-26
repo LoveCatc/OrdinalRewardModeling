@@ -26,6 +26,7 @@ from utils.data import (
     build_dataset,
     post_filter_by_ratio,
 )
+from utils.olmoe_rm import OlmoeForSequenceClassification
 from utils.trainer import (
     BTTRewardTrainer,
     RewardTrainer,
@@ -73,7 +74,7 @@ def main(
     set_random_seed(seed)
 
     tokenizer_name = script_args.model_name
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=False)
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=True)
 
     # handle those with no official pad token
     no_predefined_pad_flag = False
@@ -127,7 +128,7 @@ def main(
         per_device_eval_batch_size=script_args.per_device_eval_batch_size,
         num_train_epochs=script_args.num_train_epochs,
         weight_decay=script_args.weight_decay,
-        adam_beta1=script_args.adam_beta1,
+        # adam_beta1=script_args.adam_beta1,
         evaluation_strategy="steps",
         eval_steps=script_args.eval_every_steps,
         save_strategy="no",  # ! not saving during training
@@ -149,15 +150,26 @@ def main(
         seed=seed,
     )
 
-    model = AutoModelForSequenceClassification.from_pretrained(
-        script_args.model_name,
-        num_labels=1,
-        torch_dtype=torch.bfloat16,
-        attn_implementation="flash_attention_2",  # ! either "flash_attention_2" or "eager"
-    )
+    if "olmoe" in script_args.model_name.lower():
+        model = OlmoeForSequenceClassification.from_pretrained(
+            script_args.model_name,
+            num_labels=1,
+            torch_dtype=torch.bfloat16,
+            attn_implementation="flash_attention_2",  # ! either "flash_attention_2" or "eager"
+        )
+    else:
+        model = AutoModelForSequenceClassification.from_pretrained(
+            script_args.model_name,
+            num_labels=1,
+            torch_dtype=torch.bfloat16,
+            attn_implementation="flash_attention_2",  # ! either "flash_attention_2" or "eager"
+        )
 
     if no_predefined_pad_flag:
         model.resize_token_embeddings(len(tokenizer))
+        model.config.pad_token_id = tokenizer.pad_token_id
+
+    if model.config.pad_token_id is None:
         model.config.pad_token_id = tokenizer.pad_token_id
 
     peft_config = LoraConfig(

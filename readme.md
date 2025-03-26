@@ -42,8 +42,8 @@ python prepare_oracle_data.py --built_from hub
 
 To run the experiments, use `torchrun` or `accelerate`:
 ```bash
-torchrun --standalone --nnodes 1 --nproc-per-node 1 run.py PATH/TO/CONFIG.JSON --seed 42  # for single gpu
-accelerate launch run.py PATH/TO/CONFIG.JSON --seed 42  # for multi-gpu
+torchrun --standalone --nnodes 1 --nproc-per-node 1 run.py PATH/TO/CONFIG.JSON --seed 42   # for single gpu
+accelerate launch run.py --mixed_precision=bf16 PATH/TO/CONFIG.JSON --seed 42  # for multi-gpu
 ```
 We recommend running our experiments with the number of GPUs mentioned in config names to ensure the correct batch sizes. 
 
