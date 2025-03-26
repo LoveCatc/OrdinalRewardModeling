@@ -159,6 +159,9 @@ def main(
     if no_predefined_pad_flag:
         model.resize_token_embeddings(len(tokenizer))
         model.config.pad_token_id = tokenizer.pad_token_id
+        
+    if model.config.pad_token_id is None:
+        model.config.pad_token_id = tokenizer.pad_token_id
 
     peft_config = LoraConfig(
         task_type=TaskType.SEQ_CLS,
