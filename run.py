@@ -26,6 +26,7 @@ from utils.data import (
     build_dataset,
     post_filter_by_ratio,
 )
+from utils.olmoe_rm import OlmoeForSequenceClassification
 from utils.trainer import (
     BTTRewardTrainer,
     RewardTrainer,
@@ -149,17 +150,25 @@ def main(
         seed=seed,
     )
 
-    model = AutoModelForSequenceClassification.from_pretrained(
-        script_args.model_name,
-        num_labels=1,
-        torch_dtype=torch.bfloat16,
-        attn_implementation="flash_attention_2",  # ! either "flash_attention_2" or "eager"
-    )
+    if "olmoe" in script_args.model_name.lower():
+        model = OlmoeForSequenceClassification.from_pretrained(
+            script_args.model_name,
+            num_labels=1,
+            torch_dtype=torch.bfloat16,
+            attn_implementation="flash_attention_2",  # ! either "flash_attention_2" or "eager"
+        )
+    else:
+        model = AutoModelForSequenceClassification.from_pretrained(
+            script_args.model_name,
+            num_labels=1,
+            torch_dtype=torch.bfloat16,
+            attn_implementation="flash_attention_2",  # ! either "flash_attention_2" or "eager"
+        )
 
     if no_predefined_pad_flag:
         model.resize_token_embeddings(len(tokenizer))
         model.config.pad_token_id = tokenizer.pad_token_id
-        
+
     if model.config.pad_token_id is None:
         model.config.pad_token_id = tokenizer.pad_token_id
 
